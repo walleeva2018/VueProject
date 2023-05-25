@@ -8,6 +8,9 @@ function handleCheckboxChange(item) {
   if (item.status == 'Incomplete') item.status = 'Done'
   else item.status = 'Incomplete'
 }
+function handleInput(event) {
+      this.text = event.target.innerText;
+    }
 </script>
 
 <template>
@@ -16,7 +19,7 @@ function handleCheckboxChange(item) {
       <li v-for="item in props.todo" :key="item.id">
         <div v-if="item.status == 'Incomplete'">
           <input type="checkbox" @change="handleCheckboxChange(item)" />
-          {{ item.task }}
+          <p contenteditable="true" @input="handleInput"> {{ item.task }} </p>
         </div>
         <div v-else>
           <div class="strike">{{ item.task }}</div>
