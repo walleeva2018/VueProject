@@ -1,27 +1,54 @@
 <script setup>
-import TaskList from './TaskList.vue';
-import { reactive, ref } from 'vue';
-const renderTrigger = ref(0);
+import { propsToAttrMap } from '@vue/shared'
+import TaskList from './TaskList.vue'
+import { reactive, ref,computed } from 'vue'
+const allState = ['all','Done', 'Incomplete']
+const renderTrigger = ref(0)
 const data = ref('')
 const current = reactive({
-  text: 'all',
+  text: 'all'
 })
 let todo = reactive({
-    taskList: []
+  taskList: []
 })
 function addMe() {
+  if (data.value == '') return
   const obj = {
     id: Date.now(),
     task: data.value,
-    status: "Incomplete",
+    status: 'Incomplete'
   }
-  data.value = "";
-  todo.taskList.push(obj);
+  data.value = ''
+  todo.taskList.push(obj)
 }
-function removeMe(){ 
+function removeMe() {
+  todo.taskList = todo.taskList.filter((n) => n.status != 'Done')
+}
 
-  todo.taskList=todo.taskList.filter((n)=>n.status!='Done');
+function deleteFunction(ID) {
+  for (const item of todo.taskList) {
+    if (item.id == ID) {
+      todo.taskList = todo.taskList.filter((i) => i.id != ID)
+    }
+  }
 }
+
+function doneFunction(ID) {
+  for (const item of todo.taskList) {
+    if (item.id == ID) {
+      if (item.status == 'Incomplete') item.status = 'Done'
+      else item.status = 'Incomplete'
+    }
+  }
+}
+function handleInput(event) {
+  this.text = event.target.innerText
+};
+
+const currentList = computed(() => {
+  return todo.taskList.filter((n)=> n.status!=current.text)
+})
+
 
 </script>
 
@@ -29,54 +56,38 @@ function removeMe(){
   <div class="container">
     <form>
       <div>
-        <h2> Add your task </h2>
+        <h2>Add your task</h2>
         <div class="oneLine">
-          <input v-model="data" type="text" placeholder="Your Task....">
-          <button @click.prevent="addMe"> Add</button><br>
+          <input v-model="data" type="text" placeholder="Your Task...." />
+          <button @click.prevent="addMe">Add</button><br />
         </div>
-        <div v-if="todo.taskList.length > 0 && current.text == 'all'">
-          <TaskList :todo="todo.taskList" />
-        </div>
-        <div v-if="todo.taskList.length > 0 && current.text == 'active'">
-          <TaskList :todo="todo.taskList.filter((n) => n.status == 'Incomplete')" />
-        </div>
-        <div v-if="todo.taskList.length > 0 && current.text == 'completed'">
-          <TaskList :todo="todo.taskList.filter((n)=> n.status=='Done')" />
-        </div>
+        <TaskList
+          :todo="currentList"
+          :Indicator="current.text"
+          @deleteThis="deleteFunction"
+          @doneThis="doneFunction"
+          @editThis="handleInput"
+        />
         <div class="inLine">
-          <div v-if="current.text == 'all'">
-            <div style="background-color: blue"><button @click.prevent="current.text = 'all'">All</button></div>
-          </div>
-          <div v-else>
-            <button @click.prevent="current.text = 'all'">All</button>
-          </div>
-          <div v-if="current.text == 'active'">
-            <div style="background-color: blue"><button @click.prevent="current.text = 'active'">Active</button></div>
-          </div>
-          <div v-else>
-            <button @click.prevent="current.text = 'active'">Active</button>
-          </div>
-          <div v-if="current.text == 'completed'">
-            <div style="background-color: blue"><button @click.prevent="current.text = 'completed'"> Completed</button></div>
-          </div>
-          <div v-else>
-            <button @click.prevent="current.text = 'completed'"> Completed</button>
+          <div v-for="state in allState">
+            <button
+              :style="{ background: current.text == state ? 'blue' : 'black' }"
+              @click.prevent="current.text = state"
+            >
+              {{ state=='Incomplete'? 'DONE': state=='Done'? 'ACTIVE':'ALL' }}
+            </button>
           </div>
         </div>
         <a href="" @click.prevent="removeMe">Clear Completed</a>
-
       </div>
     </form>
   </div>
 </template>
 
-
 <style scoped>
 * {
   box-sizing: border-box;
 }
-
-
 
 input {
   flex: 1;
@@ -109,9 +120,11 @@ button {
   padding: 5px 10px;
   margin-right: 20px;
   margin-left: 20px;
+  color: white;
+  background-color: black;
 }
 
-a{
+a {
   margin-left: 20px;
   margin-top: 20px;
 }

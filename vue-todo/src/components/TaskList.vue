@@ -1,32 +1,27 @@
 <script setup>
-import { watch, ref } from 'vue'
-const checkboxValue = ref(false)
-const props = defineProps({
-  todo: Array
+let  props = defineProps({
+  todo: Array,
+  Indicator: String
 })
-function handleCheckboxChange(item) {
-  if (item.status == 'Incomplete') item.status = 'Done'
-  else item.status = 'Incomplete'
-}
-function handleInput(event) {
-      this.text = event.target.innerText;
-    }
 </script>
 
 <template>
   <div class="black">
     <ul>
-      <li v-for="item in props.todo" :key="item.id">
+      <li v-for="item in props.todo.filter((n)=> n.status != Indicator)" :key="item.id">
         <div v-if="item.status == 'Incomplete'">
-          <input type="checkbox" @change="handleCheckboxChange(item)" />
-          <p contenteditable="true" @input="handleInput"> {{ item.task }} </p>
+          <span contenteditable="true" @input="handleInput"> {{ item.task }} </span>
         </div>
         <div v-else>
           <div class="strike">{{ item.task }}</div>
         </div>
-        <button class="on-right" @click="props.todo.splice(props.todo.indexOf(item), 1)">
+        <button class="on-left" @click.prevent="$emit('doneThis',item.id)">
+          Done
+        </button>
+        <button class="on-right" @click.prevent="$emit('deleteThis',item.id)">
           Delete
         </button>
+       
       </li>
     </ul>
   </div>
@@ -37,8 +32,9 @@ ul {
   list-style-type: none;
   padding: 0;
 }
-li{
+li {
   display: flex;
+  margin-top: 20px;
 }
 .black {
   display: flex;
@@ -57,6 +53,12 @@ li{
 
 .on-right {
   margin-left: 10px;
+  background-color: red;
+}
+
+.on-left {
+  margin-left: 10px;
+  background-color: greenyellow;
 }
 
 .strike {
